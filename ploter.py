@@ -3,7 +3,7 @@ import ollama
 from langchain_chroma import Chroma
 from langchain_ollama import OllamaEmbeddings
 import graphviz
-# --- SETUP ---
+
 st.set_page_config(page_title="Cyber Kill Chain AI Analyst", layout="wide")
 DB_DIR = "cyber_db"
 EMBED_MODEL = "nomic-embed-text"
@@ -16,17 +16,14 @@ def load_db():
 
 db = load_db()
 
-# --- UI ---
 st.title("🛡️ Cyber Kill Chain Visualizer")
 query = st.text_input("Enter a CVE or Threat Scenario (e.g., 'Log4Shell analysis'):")
 
 if query:
     with st.spinner("Analyzing threat patterns..."):
-        # 1. Retrieval
         docs = db.similarity_search(query, k=3)
         context = "\n".join([d.page_content for d in docs])
         
-        # 2. Reasoning with Fin-R1
         prompt = f"""
         Context: {context}
         Task: Analyze the following query through the 7 steps of the Cyber Kill Chain.
@@ -42,12 +39,10 @@ if query:
         response = ollama.chat(model=REASONING_MODEL, messages=[{'role': 'user', 'content': prompt}])
         full_text = response['message']['content']
         
-        # 3. Visualization Logic
         st.subheader("Attack Progression Graph")
         dot = graphviz.Digraph()
         dot.attr(rankdir='LR', size='10,5')
         
-        # Define the Kill Chain Nodes
         stages = [
             "Recon", "Weaponize", "Delivery", "Exploit", 
             "Install", "C2", "Actions"
